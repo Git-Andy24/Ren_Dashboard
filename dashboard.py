@@ -22,17 +22,11 @@ st.markdown("""
 # ----------------------------
 
 @st.cache_data
-
-
-@st.cache_data
-def load_data(file_path_or_buffer=None):
+def load_data(uploaded_file):
     """
-    Load and preprocess offer tracker data.
-    - If file_path_or_buffer is None: reads from default file
-    - If it's a file-like object (e.g., UploadedFile): reads from it
+    Load and preprocess offer tracker data from an uploaded Excel file.
     """
-
-    df = pd.read_excel(file_path_or_buffer, sheet_name="Sheet1")
+    df = pd.read_excel(uploaded_file, sheet_name="Sheet1")
     
     df['Offer Date'] = pd.to_datetime(df['Offer Date'], errors='coerce')
     df = df.dropna(subset=['Offer Date'])
@@ -76,20 +70,25 @@ def load_data(file_path_or_buffer=None):
     return df
 
 # ----------------------------
-# Sidebar: Only Date/Month Filter
+# Sidebar: Upload & Load Data
 # ----------------------------
 
-#U pload custom Excel file
+st.sidebar.header("📁 Upload Offer Tracker")
 uploaded_file = st.sidebar.file_uploader(
-    "📁 Upload Offer Tracker Excel",
-    type=["xlsx"],
-    help="Must contain 'Sheet1' with same structure as default tracker"
+    "Upload Offer Tracker Excel (must contain 'Sheet1')",
+    type=["xlsx"]
 )
 
-# Load data: use uploaded file 
 if uploaded_file is None:
     st.warning("⚠️ Please upload an Excel file to proceed.")
-    st.stop()  # Halt execution until file is uploaded
+    st.stop()
+
+# ✅ NOW LOAD THE DATA
+df = load_data(uploaded_file)
+
+# ----------------------------
+# Sidebar: Period Filter
+# ----------------------------
 
 st.sidebar.header("🔍 Period Filter")
 
@@ -256,22 +255,18 @@ if not full_trend.empty:
     ))
 
     fig.update_layout(
-            barmode='group',
-            xaxis_title="",
-            yaxis_title="Count",
-            hovermode="x unified",
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            margin=dict(t=50)
-        )
-    
-    fig.data[0].name = "Total Offers"
-    fig.data[1].name = "Onboarded"
+        barmode='group',
+        xaxis_title="",
+        yaxis_title="Count",
+        hovermode="x unified",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(t=50)
+    )
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("No historical data available.")
 
 st.markdown("---")
-
 
 st.markdown("#### Overall Status Distribution")
 status_all = df['Status'].value_counts()
