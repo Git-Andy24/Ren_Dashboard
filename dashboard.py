@@ -31,10 +31,8 @@ def load_data(file_path_or_buffer=None):
     - If file_path_or_buffer is None: reads from default file
     - If it's a file-like object (e.g., UploadedFile): reads from it
     """
-    if file_path_or_buffer is None:
-        df = pd.read_excel("/Users/anerudhshyam/Desktop/Coding/Streamlit_Dashboards/Ren_Dashboard/Shalini ma'am Offer Tracker.xlsx", sheet_name="Sheet1")
-    else:
-        df = pd.read_excel(file_path_or_buffer, sheet_name="Sheet1")
+
+    df = pd.read_excel(file_path_or_buffer, sheet_name="Sheet1")
     
     df['Offer Date'] = pd.to_datetime(df['Offer Date'], errors='coerce')
     df = df.dropna(subset=['Offer Date'])
@@ -77,25 +75,21 @@ def load_data(file_path_or_buffer=None):
     
     return df
 
-df = load_data()
-
 # ----------------------------
 # Sidebar: Only Date/Month Filter
 # ----------------------------
 
-#Optional: Upload custom Excel file
+#U pload custom Excel file
 uploaded_file = st.sidebar.file_uploader(
-    "📁 Upload Offer Tracker Excel (optional)",
+    "📁 Upload Offer Tracker Excel",
     type=["xlsx"],
     help="Must contain 'Sheet1' with same structure as default tracker"
 )
 
-# Load data: use uploaded file if provided, else default
-if uploaded_file is not None:
-    df = load_data(uploaded_file)
-else:
-    df = load_data()  # loads from "Shalini ma'am Offer Tracker.xlsx"
-
+# Load data: use uploaded file 
+if uploaded_file is None:
+    st.warning("⚠️ Please upload an Excel file to proceed.")
+    st.stop()  # Halt execution until file is uploaded
 
 st.sidebar.header("🔍 Period Filter")
 
